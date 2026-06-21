@@ -21,8 +21,8 @@ sudo apt install network-manager iproute2 arping
 2. edit the file and change IP addresses and interface names according to your needs and system configuration
   - `VIP` in CIDR notation
   - `VIP_ADDR`
-  - `WIFI` from ifconfig
-  - `ETH` from ifconfig
+  - `WIFI` from `ifconfig`
+  - `ETH` from `ifconfig`
     
     **Warning** ⚠️
     You *ABSOLUTELY MUST* choose a safe IP for the floating IP. The floating IP must be
