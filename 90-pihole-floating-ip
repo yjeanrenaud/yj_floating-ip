@@ -1,0 +1,63 @@
+#!/bin/bash
+set -euo pipefail
+
+# change accordingly
+VIP="192.168.1.3/24"
+VIP_ADDR="192.168.1.3"
+WIFI="wlan0"
+ETH="eth0"
+LOGTAG="pihole-floating-ip"
+
+wifi_up() {
+    nmcli -t -f DEVICE,STATE device status | grep -q "^${WIFI}:connected$" &&
+    ip -4 addr show dev "$WIFI" | grep -q 'inet '
+}
+
+eth_up() {
+    ip link show dev "$ETH" 2>/dev/null | grep -q "state UP"
+}
+
+has_ip() {
+    local dev="$1"
+    ip -4 addr show dev "$dev" | grep -q "inet ${VIP_ADDR}/"
+}
+
+announce_ip() {
+    local dev="$1"
+    if command -v arping >/dev/null 2>&1; then
+        arping -q -c 3 -A -I "$dev" "$VIP_ADDR" || true
+        arping -q -c 3 -U -I "$dev" "$VIP_ADDR" || true
+    fi
+}
+
+move_vip_to_wifi() {
+    logger -t "$LOGTAG" "moving $VIP_ADDR to $WIFI"
+
+    ip addr del "$VIP" dev "$ETH" 2>/dev/null || true
+
+    if ! has_ip "$WIFI"; then
+        ip addr add "$VIP" dev "$WIFI"
+    fi
+
+    announce_ip "$WIFI"
+}
+
+move_vip_to_eth() {
+    logger -t "$LOGTAG" "moving $VIP_ADDR to $ETH"
+
+    ip addr del "$VIP" dev "$WIFI" 2>/dev/null || true
+
+    if ! has_ip "$ETH"; then
+        ip addr add "$VIP" dev "$ETH"
+    fi
+
+    announce_ip "$ETH"
+}
+
+if wifi_up; then
+    move_vip_to_wifi
+elif eth_up; then
+    move_vip_to_eth
+else
+    logger -t "$LOGTAG" "neither $WIFI nor $ETH is usable for $VIP_ADDR"
+fi
