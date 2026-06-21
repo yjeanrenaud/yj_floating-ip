@@ -23,14 +23,14 @@ sudo apt install network-manager iproute2 arping
   - `VIP_ADDR`
   - `WIFI` from ifconfig
   - `ETH` from ifconfig
-  <br/>
- **Warning ⚠️** <br/>
-   You *ABSOLUTELY MUST* choose a safe IP for the floating IP. The floating IP must be
+    
+    **Warning** ⚠️
+    You *ABSOLUTELY MUST* choose a safe IP for the floating IP. The floating IP must be
     1. unused,
     2. in the same subnet,
     3. outside the DHCP pool or reserved,
     5. and not already assigned to another host.
-  Otherwise this can create IP conflicts which might be difficult to debug.
+    Otherwise this can create IP conflicts which might be difficult to debug.
 7. copy the finished script to
 ```
 /etc/NetworkManager/dispatcher.d/90-pihole-floating-ip
